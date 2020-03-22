@@ -1,0 +1,33 @@
+import requests
+from bs4 import BeautifulSoup
+allUniv = []#建立一个二维列表，存储所有表格信息
+def getHTMLText(url):#获取传入的地址
+    try:#进行异常的处理
+        r = requests.get(url,timeout = 30)#参数1：某网页的url地址，参数2：设定每次请求超时时间为n秒
+        r.raise_for_status()#如果次参数不是200，则产生异常，进入异常处理语句，否则程序继续往下走
+        r.encoding = 'utf-8'#将获取的内容转码，使中文能够正常显示而不会产生乱码
+        return r.text#HTTP相应内容的字符串形式，即url对应的页面内容
+    except:
+        return ""
+def fillUnivList(soup):
+    data = soup.find_all('tr')#通过soup对象的find_all属性找到抓取的网页中的所有tr标签
+    for tr in data:
+        ltd = tr.find_all('td')#再在每个tr标签中找到所有的td标签
+        if len(ltd) == 0:#如果这一行的tr中的td标签数为0个的话，则跳过这个tr,继续进行下一个
+            continue
+        singleUniv = []#将这个大学的各项信息载入列表
+        for td in ltd:
+            singleUniv.append(td.string)#提取已载入singleUniv列表的td标签中的信息,
+        allUniv.append(singleUniv)#提取singleUniv列表中的信息到allUniv列表中
+def printUnivList(num):
+    print("{1:^2}{2:{0}^10}{3:{0}^6}{4:{0}^4}{5:{0}^10}".format(chr(12288),"排名","学校名称","省份","总分","培养规模"))#注意输出格式的控制
+    for i in range(num):
+        u = allUniv[i]
+        print("{1:^2}{2:{0}^10}{3:{0}^6}{4:{0}^4}{5:{0}^10}".format(chr(12288),u[0],u[1],u[2],eval(u[3]),u[6]))
+def main(num):
+    url = 'http://www.zuihaodaxue.cn/zuihaodaxuepaiming2019.html'#设定网页的地址
+    html = getHTMLText(url)#将url地址传入函数，返回字符串形式给变量html
+    soup = BeautifulSoup(html,"html.parser")#生成一个soup的对象，此时soup就是一个BeautifulSoup对象
+    fillUnivList(soup)#将soup对象传入函数
+    printUnivList(num)
+main(300)
